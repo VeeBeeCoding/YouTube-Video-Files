@@ -1,0 +1,60 @@
+Create table BUCKETS (
+CATEGORY varchar(50) not null,
+SUB_CATEGORY varchar(50) not null, 
+BUCKET_TYPE varchar(1),
+MODIFIED_BY varchar(50),
+TIME_STAMP datetime)
+
+Create table BUCKETS (
+CATEGORY varchar(50) not null,
+SUB_CATEGORY varchar(50) not null, 
+BUCKET_TYPE varchar(1),
+MODIFIED_BY varchar(50),
+TIME_STAMP datetime)
+
+Create table BUDGETS(
+BUDGET_ID int identity(1,1) not null,
+[MONTH_NO] [int] NULL,
+[CAL_YEAR] [int] NULL,
+[CATEGORY] [varchar](50) NULL,
+[SUB_CATEGORY] [varchar](50) NULL,
+[BUD_AMT] [decimal](20, 2) NULL,
+[BUD_TYPE] [varchar](10) NULL,
+[MODIFIED_BY] [varchar](50) NULL,
+[TIME_STAMP] [datetime] NULL,
+[COMMENT] [varchar](250) NULL,
+[RECLASS_ID] [int] NULL)
+
+Create table EXPENSES(
+MONTH_NO int,
+CAL_YEAR int,
+TRN_DATE date,
+CATEGORY varchar(50),
+SUB_CATEGORY varchar(50),
+AMOUNT decimal(20,2),
+TRN_DESC varchar(200),
+MODIFIED_BY varchar(50),
+TIME_STAMP datetime
+)
+
+Create table INCOME(
+MONTH_NO int,
+CAL_YEAR int,
+TRN_DATE date,
+INC_SOURCE varchar(50),
+INC_AMOUNT decimal(20,2),
+INC_DESC varchar(200),
+MODIFIED_BY varchar(50),
+TIME_STAMP datetime
+)
+
+Create table DATES(
+YEAR_MONTH varchar(15),
+MONTH_NO int, 
+MONTH_NAME varchar(30),
+CAL_YEAR int,
+CUR_FL varchar(1),
+MODIFIED_BY varchar(50),
+TIME_STAMP datetime
+)
+
