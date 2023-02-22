@@ -1,4 +1,4 @@
-'Create Videos for Personal Finance project, Video 003 on YouTube
+'For Video #003 on YouTube
 
 Create table BUCKETS (
 CATEGORY varchar(50) not null,
