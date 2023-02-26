@@ -60,4 +60,26 @@ MODIFIED_BY varchar(50),
 TIME_STAMP datetime
 )
 
- 
+' ==========================================================================
+
+Select * from DATES
+	order by YEAR_MONTH
+	
+	Begin tran
+	Insert into DATES
+	(YEAR_MONTH, MONTH_NO, MONTH_NAME, CAL_YEAR, CUR_FL, MODIFIED_BY, TIME_STAMP) 
+	values
+	('2023-01',1,'January',2023,'N','VEE_BEE',Getdate()),
+	('2023-02',2,'February',2023,'N','VEE_BEE',Getdate()),
+	('2023-03',3,'March',2023,'N','VEE_BEE',Getdate()),
+	('2023-04',4,'April',2023,'N','VEE_BEE',Getdate()),
+	('2023-05',5,'May',2023,'N','VEE_BEE',Getdate()),
+	('2023-06',6,'June',2023,'N','VEE_BEE',Getdate()),
+	('2023-07',7,'July',2024,'N','VEE_BEE',Getdate()),
+	('2023-08',8,'August',2023,'N','VEE_BEE',Getdate()),
+	('2023-09',9,'September',2023,'N','VEE_BEE',Getdate())
+	
+	rollback
+	commit
+
+
