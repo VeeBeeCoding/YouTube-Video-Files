@@ -75,4 +75,30 @@ Select * from DATES
 	rollback
 	commit
 
+' ==========================================================================
+
+'Checking how many records from our working table (WK_DATES) does NOT exist in the main Dates table
+Select * 
+from WK_Dates as a
+Where not exists (Select 'X' from Dates as b
+					where a.YEAR_MONTH = b.YEAR_MONTH)
+
+
+'How to insert records from a work table to a main table ONLY IF THEY DO NOT YET EXIST in the main table 
+Begin Tran
+Insert into Dates (year_month, month_no, month_name, cal_year, CUR_FL, MODIFIED_BY, TIME_STAMP)
+Select a.year_month, a.month_no, a.month_name, a.cal_year, a.CUR_FL, a.MODIFIED_BY, a.TIME_STAMP
+from WK_DATES as a
+left join (Select b.year_month, b.month_no, b.month_name, b.cal_year, b.CUR_FL, 
+			b.MODIFIED_BY, b.TIME_STAMP
+			from DATES as b
+			right join WK_DATES as c
+			on b.year_month = c.year_month) as d
+			on a.year_month = d.year_month
+where d.year_month is Null -- only want to bring over records that aren't in Dates table
+
+Rollback
+Commit
+
+
 
