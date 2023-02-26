@@ -7,13 +7,6 @@ BUCKET_TYPE varchar(1),
 MODIFIED_BY varchar(50),
 TIME_STAMP datetime)
 
-Create table BUCKETS (
-CATEGORY varchar(50) not null,
-SUB_CATEGORY varchar(50) not null, 
-BUCKET_TYPE varchar(1),
-MODIFIED_BY varchar(50),
-TIME_STAMP datetime)
-
 Create table BUDGETS(
 BUDGET_ID int identity(1,1) not null,
 [MONTH_NO] [int] NULL,
