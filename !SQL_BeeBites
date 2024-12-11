@@ -7,7 +7,7 @@
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Backing up a table (BU = Backup, or BAK = Backup, YYYYMMDD to be the date the backup was made) 
+'[[Backing up a table (BU = Backup, or BAK = Backup, YYYYMMDD to be the date the backup was made)]] 
 'This would clone a table WITH the data
 Select * 
 Into BU_tablename_YYYYMMDD    'New table name
@@ -21,7 +21,7 @@ where 1 = 2
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'CTE = Common table expression 
+'[[CTE = Common table expression]]
 'Another way to have subqueries, or organize data sources
 
 With CTE(Monkey, Total_Fruit) as
@@ -31,7 +31,7 @@ from cte
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Check if string contains a number
+'[[Check if string contains a number]]
 Select last_name
 From names
 where translate(last_name,'0123456789','')<>last_name
@@ -44,17 +44,17 @@ where trim(translate(tel_number,'-0123456789',''))=''
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Check if table is referenced in a stored procedure or function: 
+'[[Check if table is referenced in a stored procedure or function: ]]
 Select name, object_definition(object_id) 
 from sys.procedures
 where object_definition(object_id) like '%tablename%'
 
-'Check if table is referenced in an extension: 
+'[[Check if table is referenced in an extension: ]]
 Select * 
 from admin.w_rs_desc
 where tbl_name = 'tablename'
 
-'Get list of all SPs in the current database, and then get list of all SPs from current database that arein the procedure cache.
+'[[Get list of all SPs in the current database, and then get list of all SPs from current database that arein the procedure cache.]]
 
 Select p.name as 'SP Name'
 from sys.procedures as p
@@ -70,13 +70,13 @@ where p.is_ms_shipped = 0;
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Copy data between databases within the same server 
+'[[Copy data between databases within the same server]]
 Insert into dbo.tablename 
 Select * from servername2.dbo.tablename
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Create a stored procedure
+'[[Create a stored procedure]]
 Create procedure procedure_name
 
 as 
@@ -114,7 +114,7 @@ End
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Look at the past X months
+'[[Look at the past X months]]
 Select * 
 From tablename
 Where submit_dt >= dateadd(m,-3,Getdate())
@@ -147,7 +147,7 @@ or
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Looking for a key word
+'[[Looking for a key word]]
 
 'Method 1: 
 Declare @keyword varchar(max) = 'fixed assets';
@@ -164,7 +164,7 @@ or FirstName like '%John'
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Missing in sequence
+'[[Missing in sequence]]
 Select distinct a.someid
 from numsequence as a
 join (Select someid, seqno, seqno-1 as 'PrevNo' from numsequence) as c
@@ -177,8 +177,7 @@ order by 1
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-'Adding characters before a value. For ex: Some ID numbers missing the leading 0(s). 
-
+'[[Adding characters before a value. For ex: Some ID numbers missing the leading 0(s).]] 
 Update tablename
 Set Item_No = Concat(Replicate('0',5-Len
                                         (Cast
@@ -188,7 +187,7 @@ Set Item_No = Concat(Replicate('0',5-Len
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'See if a Record Exists in Another Table/See if a Record Does Not Exist in Another Table 
+'[[See if a Record Exists in Another Table/See if a Record Does Not Exist in Another Table]]
 'Join on primary keys. Could also do "where exists" 
 Select * 
 From table1 as a
@@ -199,14 +198,14 @@ Where not exists (Select 'X' from table2 as b
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Select text left or right of a character
+'[[Select text left or right of a character]]
 Select 
 Left (yourcolumnname,charindex('(',yourcolumnname)-1)
 From yourtablename
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Temporary Tables - had seen used in queries written within PowerBI 
+'[[Temporary Tables - had seen used in queries written within PowerBI]]
 Select * 
 into #temp from dbo.tablename
 where ~~~
@@ -217,8 +216,7 @@ Drop table #temp
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Transpose (aka Pivot) Columns 
-
+'[[Transpose (aka Pivot) Columns]]
 Select distinct columnname, rowvalue
 from tablename as ds -- like dataset
 unpivot
@@ -239,14 +237,14 @@ unpivot
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Update based on another table
+'[[Update based on another table]]
 update dbo.table1
 set building = 'Jelly Beans'
 where buildingID in (Select ID from dbo.buildings) 
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Variables with stored procedure
+'[[Variables with stored procedure]]
 
 Declare @ItemID varchar(20);
 Declare @Vendor varchar(100);
@@ -258,7 +256,7 @@ Exec SP_procedurename @ItemID = @ItemID, @Type = @Type
 
 ' ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'sp_help is used to Check for Foreign Key (FK) Constraints
+'[[sp_help is used to Check for Foreign Key (FK) Constraints]]
 
 sp_help 'dbo.tablename'  -- the table you are trying to update
 
