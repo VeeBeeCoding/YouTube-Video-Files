@@ -1,82 +1,82 @@
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'The purpose of this is to have a single place for quick notes on tips and tricks
-'Code is (hopefully) in short, "bite"-sized pieces that users can easily ingest. Hence, Bee Bites. 
+--The purpose of this is to have a single place for quick notes on tips and tricks
+--Code is (hopefully) in short, "bite"-sized pieces that users can easily ingest. Hence, Bee Bites. 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Backing up a table (BU = Backup, or BAK = Backup, YYYYMMDD to be the date the backup was made)]] 
-'This would clone a table WITH the data
+--[[Backing up a table (BU = Backup, or BAK = Backup, YYYYMMDD to be the date the backup was made)]] 
+--This would clone a table WITH the data
 Select * 
-Into BU_tablename_YYYYMMDD    'New table name
-From tablename                'Original table
+Into BU_tablename_YYYYMMDD    --New table name
+From tablename                --Original table
 
-'Clone a table WITHOUT copying the data (clone will be empty) 
+--Clone a table WITHOUT copying the data (clone will be empty) 
 Select * 
-Into newtable      'New table name
-From tablename     'Original table 
+Into newtable      --New table name
+From tablename     --Original table 
 where 1 = 2 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[CTE = Common table expression]]
-'Another way to have subqueries, or organize data sources
+--[[CTE = Common table expression]]
+--Another way to have subqueries, or organize data sources
 
 With CTE(Monkey, Total_Fruit) as
-    (Select Monkey, Sum(Fruit) as 'Total_Fruit' from tablename)
+    (Select Monkey, Sum(Fruit) as --Total_Fruit-- from tablename)
 Select cte.Monkey, cte.Total_Fruit
 from cte
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Check if string contains a number]]
+--[[Check if string contains a number]]
 Select last_name
 From names
-where translate(last_name,'0123456789','')<>last_name
+where translate(last_name,--0123456789--,----)<>last_name
 
-'Test if a string is all numbers
+--Test if a string is all numbers
 Could test if a string is all #s
 Select tel_number
 from names
-where trim(translate(tel_number,'-0123456789',''))=''
+where trim(translate(tel_number,---0123456789--,----))=----
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Check if table is referenced in a stored procedure or function: ]]
+--[[Check if table is referenced in a stored procedure or function: ]]
 Select name, object_definition(object_id) 
 from sys.procedures
-where object_definition(object_id) like '%tablename%'
+where object_definition(object_id) like --%tablename%--
 
-'[[Check if table is referenced in an extension: ]]
+--[[Check if table is referenced in an extension: ]]
 Select * 
 from admin.w_rs_desc
-where tbl_name = 'tablename'
+where tbl_name = --tablename--
 
-'[[Get list of all SPs in the current database, and then get list of all SPs from current database that arein the procedure cache.]]
+--[[Get list of all SPs in the current database, and then get list of all SPs from current database that arein the procedure cache.]]
 
-Select p.name as 'SP Name'
+Select p.name as --SP Name--
 from sys.procedures as p
 where p.is_ms_shipped = 0
 
 Except
 
-Select p.name as 'SP Name'
+Select p.name as --SP Name--
 from sys.procedures as p
 inner join sys.dm_exec_procedure_stats as qs
 on p.object_id = qs.object_id
 where p.is_ms_shipped = 0;
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Copy data between databases within the same server]]
+--[[Copy data between databases within the same server]]
 Insert into dbo.tablename 
 Select * from servername2.dbo.tablename
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Create a stored procedure]]
+--[[Create a stored procedure]]
 Create procedure procedure_name
 
 as 
@@ -88,12 +88,12 @@ Begin
 Declare @prc_name varchar(40)
   Begin Try
       
-      Set @prc_name = 'Update Status' -- Keeping track of where you are
+      Set @prc_name = --Update Status-- -- Keeping track of where you are
       Begin
       ~~~~ (your coding here) 
       End
       
-      Set @prc_name = 'Replace blanks with Nulls' 
+      Set @prc_name = --Replace blanks with Nulls-- 
       Begin
       ~~~~ (your coding here) 
       End
@@ -112,100 +112,100 @@ End Catch
 
 End
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Look at the past X months]]
+--[[Look at the past X months]]
 Select * 
 From tablename
 Where submit_dt >= dateadd(m,-3,Getdate())
 
-'Year to date
-'How to get "year to date" when multiple columns make each row/record unique. 
-'The answer is behind partition. 
-    '(Ex: 
-    '    partition by concat(acct,org,proj) order by FY,PD 
-    ' )
+--Year to date
+--How to get "year to date" when multiple columns make each row/record unique. 
+--The answer is behind partition. 
+    --(Ex: 
+    --    partition by concat(acct,org,proj) order by FY,PD 
+    -- )
 
 Select
 concat(~~~)
 , sum(g.amt)  -- normal amount for the period
 , sum(g.amt) over (partion by concat(~~~)
                    order by fiscal_pd
-                  ) as 'YTD Amt' 
+                  ) as --YTD Amt-- 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'Lag: get results from previous row
-'Lead: get results from next row
+--Lag: get results from previous row
+--Lead: get results from next row
 
-'Grabbing result from previous row
+--Grabbing result from previous row
 Select (lag(Status) over (partition by ID order by ProjectName, ID, LastModified))
 
 (lag(min(effect_dt)) over (partition by gems_id order by effect_dt)) 
 or
 ((lead(min(effect_dt)) over (partition by gems_id order by effect_dt))-1) 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Looking for a key word]]
+--[[Looking for a key word]]
 
-'Method 1: 
-Declare @keyword varchar(max) = 'fixed assets';
+--Method 1: 
+Declare @keyword varchar(max) = --fixed assets--;
 
 Select * from tablename
-where (' '+col_name+' ' like '%[^a-z]'+@keyword+'[^a-z]%')
+where (-- --+col_name+-- -- like --%[^a-z]--+@keyword+--[^a-z]%--)
 
-'Method 2: 
+--Method 2: 
 Select * 
 from tablename
-where Firstname like '%Amanda%'
-or Firstname like 'Bob%' 
-or FirstName like '%John' 
+where Firstname like --%Amanda%--
+or Firstname like --Bob%-- 
+or FirstName like --%John-- 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Missing in sequence]]
+--[[Missing in sequence]]
 Select distinct a.someid
 from numsequence as a
-join (Select someid, seqno, seqno-1 as 'PrevNo' from numsequence) as c
+join (Select someid, seqno, seqno-1 as --PrevNo-- from numsequence) as c
 on a.someid = c.someid
 and a.seqno = c.seqno
-where not exists (Select 'X' from numsequence as b
+where not exists (Select --X-- from numsequence as b
 					where a.seqno = b.seqno-1)
 order by 1
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-'[[Adding characters before a value. For ex: Some ID numbers missing the leading 0(s).]] 
+--[[Adding characters before a value. For ex: Some ID numbers missing the leading 0(s).]] 
 Update tablename
-Set Item_No = Concat(Replicate('0',5-Len
+Set Item_No = Concat(Replicate(--0--,5-Len
                                         (Cast
                                              (Item_No as nvarchar(max))
                                          )
                                ),ItemNo) 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[See if a Record Exists in Another Table/See if a Record Does Not Exist in Another Table]]
-'Join on primary keys. Could also do "where exists" 
+--[[See if a Record Exists in Another Table/See if a Record Does Not Exist in Another Table]]
+--Join on primary keys. Could also do "where exists" 
 Select * 
 From table1 as a
-Where not exists (Select 'X' from table2 as b
+Where not exists (Select --X-- from table2 as b
                   where a.id = b.id
                   )
 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Select text left or right of a character]]
+--[[Select text left or right of a character]]
 Select 
-Left (yourcolumnname,charindex('(',yourcolumnname)-1)
+Left (yourcolumnname,charindex(--(--,yourcolumnname)-1)
 From yourtablename
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Temporary Tables - had seen used in queries written within PowerBI]]
+--[[Temporary Tables - had seen used in queries written within PowerBI]]
 Select * 
 into #temp from dbo.tablename
 where ~~~
@@ -214,9 +214,9 @@ Select * from #temp
 where ~~~
 Drop table #temp
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Transpose (aka Pivot) Columns]]
+--[[Transpose (aka Pivot) Columns]]
 Select distinct columnname, rowvalue
 from tablename as ds -- like dataset
 unpivot
@@ -235,35 +235,35 @@ unpivot
  column2     Juice
  column2     Soda
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Update based on another table]]
+--[[Update based on another table]]
 update dbo.table1
-set building = 'Jelly Beans'
+set building = --Jelly Beans--
 where buildingID in (Select ID from dbo.buildings) 
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[Variables with stored procedure]]
+--[[Variables with stored procedure]]
 
 Declare @ItemID varchar(20);
 Declare @Vendor varchar(100);
 
-Set @ItemID = '00052';
-Set @Type = 'Sports'
+Set @ItemID = --00052--;
+Set @Type = --Sports--
 
 Exec SP_procedurename @ItemID = @ItemID, @Type = @Type
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-'[[sp_help is used to Check for Foreign Key (FK) Constraints]]
+--[[sp_help is used to Check for Foreign Key (FK) Constraints]]
 
-sp_help 'dbo.tablename'  -- the table you are trying to update
+sp_help --dbo.tablename--  -- the table you are trying to update
 
-'You can see what other tables/columns a column references. 
-'Great for trying to resolve issues when attempting to update a table, but getting a foreign key contstraint error.
+--You can see what other tables/columns a column references. 
+--Great for trying to resolve issues when attempting to update a table, but getting a foreign key contstraint error.
 
-' ////////////////////////////////////////////////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
