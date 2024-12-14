@@ -99,35 +99,47 @@ Commit
 -- ////////////////////////////////////////////////////////
 
 -- Method 3: Copy from another database from same SQL server
+
+
 -- Do this in DEV 
+             Create table Buckets
+             (
+             ID Int,
+             Category varchar(50),
+             Subcategory varchar(100), 
+             Comment varchar(1000), 
+              )
+             
+              Select * from buckets 
+             
+              Truncate table buckets 
+             
+             
+              Insert into Buckets 
+              Select * from VeeBeeTutorials_PROD.dbo.Buckets
+             
+              Begin tran
+             Update Buckets 
+             Set Comment = Concat(Comment,'/ This is a dev comment')
+             
+             Rollback
+             Commit
+             
+             Select * from Buckets
 
-
-Create table Buckets
-(
-ID Int,
-Category varchar(50),
-Subcategory varchar(100), 
-Comment varchar(1000), 
- )
-
- Select * from buckets 
-
- Truncate table buckets 
-
-
- Insert into Buckets 
- Select * from VeeBeeTutorials_PROD.dbo.Buckets
-
- Begin tran
-Update Buckets 
-Set Comment = Concat(Comment,'/ This is a dev comment')
+-- Do in Prod
+Begin tran
+Update Buckets
+Set Comment - b.Comment
+From VeeBeeTutorials.DEV.dbo.Buckets as b
+where Buckets.Category = b.Category
+and Buckets.Subcategory = b.Subcategory
 
 Rollback
 Commit
 
 
 
-Select * from Buckets
 
 -- ////////////////////////////////////////////////////////
 -- ////////////////////////////////////////////////////////
