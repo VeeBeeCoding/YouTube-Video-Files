@@ -1,0 +1,159 @@
+/*
+Video: Update and Alter 
+*/
+
+-- ////////////////////////////////////////////////////////
+
+-- Step 1: Creating a table to work with 
+Create table Buckets
+(
+ID Int Identity(1,1),
+Category varchar(50),
+Subcategory varchar(100), 
+Comment varchar(1000), 
+ )
+
+ drop table Buckets
+
+Select * from Buckets
+
+-- ////////////////////////////////////////////////////////
+
+-- Step 2: Inserting Data
+
+Insert into Buckets (ID, Category, Subcategory)
+values
+(1,'Bills','Water'), 
+(2,'Bills','Electricity'), 
+(3,'Bills','Rent/Mortgage'), 
+(4,'Bills','Wifi'), 
+(5,'Bills','Phone'), 
+(6,'Bills','Trash'), 
+(7,'Other Expenses','Groceries'), 
+(8,'Other Expenses','Gas'), 
+(9,'Other Expenses','Lawn Care'), 
+(10,'Other Expenses','Clothes'),
+(11,'Retirement','Roth IRA 1'), 
+(12,'Retirement','Roth IRA 2')
+
+-- If work table used Identity, then take out the ID
+Insert into Buckets (Category, Subcategory)
+values
+('Bills','Water'), 
+('Bills','Electricity'), 
+('Bills','Rent/Mortgage'), 
+('Bills','Wifi'), 
+('Bills','Phone'), 
+('Bills','Trash'), 
+('Other Expenses','Groceries'), 
+('Other Expenses','Gas'), 
+('Other Expenses','Lawn Care'), 
+('Other Expenses','Clothes'),
+('Retirement','Roth IRA 1'), 
+('Retirement','Roth IRA 2')
+
+
+
+-- ////////////////////////////////////////////////////////
+
+-- [[ UPDATE Notes ]] 
+
+-- Method 1: Hard Coding Update
+Begin tran
+Update Buckets
+Set Comment = 'Paid once a month' 
+Where Category = 'Bills'
+
+Rollback
+Commit
+
+-- ////////////////////////////////////////////////////////
+
+-- Method 2: Update based on another table
+Select * 
+Into WK_Buckets
+From Buckets
+
+Select * from WK_Buckets
+--Drop table WK_Buckets
+
+Begin tran
+Update WK_Buckets
+Set Comment = 'Will increase next month' 
+Where Subcategory = 'Groceries'
+
+Rollback
+Commit
+
+
+Begin tran
+Update Buckets
+Set Comment = b.Comment 
+From WK_Buckets as b
+where Buckets.Category = b.Category
+and Buckets.Subcategory = b.Subcategory
+
+Rollback
+Commit
+
+-- ////////////////////////////////////////////////////////
+
+-- Method 3: Copy from another database from same SQL server
+-- Do this in DEV 
+
+
+Create table Buckets
+(
+ID Int,
+Category varchar(50),
+Subcategory varchar(100), 
+Comment varchar(1000), 
+ )
+
+ Select * from buckets 
+
+ Truncate table buckets 
+
+
+ Insert into Buckets 
+ Select * from VeeBeeTutorials_PROD.dbo.Buckets
+
+ Begin tran
+Update Buckets 
+Set Comment = Concat(Comment,'/ This is a dev comment')
+
+Rollback
+Commit
+
+
+
+Select * from Buckets
+
+-- ////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////
+
+-- [[ ALTER Notes ]] 
+
+-- Adding  new column
+Alter table Buckets
+add Vendor varchar(25); 
+
+-- Renaming a column 
+exec sp_rename 'Buckets.Vendor','Vendor_Name'
+
+-- Quickly putting in a value to test changing column type with data present
+Update Buckets 
+Set Vendor_Name = 'Buy n Large'
+;
+
+-- Change data type, but overall size is the same
+Alter table Buckets 
+Alter Column Vendor_Name char(25);
+
+-- Change data type, new size being smaller
+Alter table Buckets 
+Alter Column Vendor_Name varchar(5);
+
+-- Removing a column
+Alter table Buckets
+drop column Vendor_Name; 
