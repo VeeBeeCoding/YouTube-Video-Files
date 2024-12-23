@@ -141,9 +141,9 @@ concat(~~~)
 --Grabbing result from previous row
 Select (lag(Status) over (partition by ID order by ProjectName, ID, LastModified))
 
-(lag(min(effect_dt)) over (partition by gems_id order by effect_dt)) 
+(lag(min(effect_dt)) over (partition by empl_id order by effect_dt)) 
 or
-((lead(min(effect_dt)) over (partition by gems_id order by effect_dt))-1) 
+((lead(min(effect_dt)) over (partition by empl_id order by effect_dt))-1) 
 
 -- ////////////////////////////////////////////////////////////////////////////////////////////////////
 
