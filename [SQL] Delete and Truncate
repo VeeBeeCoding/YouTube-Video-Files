@@ -1,0 +1,90 @@
+-- Creating a table to work with 
+Create table Buckets
+(
+ID Int Identity(1,1),
+Category varchar(50),
+Subcategory varchar(100), 
+Comment varchar(1000), 
+ )
+
+
+ Insert into Buckets (Category, Subcategory)
+values
+('Bills','Water'), 
+('Bills','Electricity'), 
+('Bills','Rent/Mortgage'), 
+('Bills','Wifi'), 
+('Bills','Phone'), 
+('Bills','Trash'), 
+('Other Expenses','Groceries'), 
+('Other Expenses','Gas'), 
+('Other Expenses','Lawn Care'), 
+('Other Expenses','Clothes'),
+('Retirement','Roth IRA 1'), 
+('Retirement','Roth IRA 2')
+
+-- ////////////////////////////////////////////////////////
+-- ////////////////////////////////////////////////////////
+
+-- [[ METHOD 1: Where clause ] 
+
+Begin Tran
+Delete from Buckets 
+Where Category like 'Bill%' 
+
+Rollback
+Commit
+
+Select * from Buckets 
+
+-- [[ METHOD 2: Join on Work Table ]] 
+
+-- Making a work table we can reference for updates
+Select * 
+Into WK_Buckets_ForDel
+From Buckets 
+
+Select * from WK_Buckets_ForDel
+
+-- A quick update to trim down our work table to just what we want
+Begin Tran 
+Delete from WK_Buckets_ForDel
+where category <> 'Bills'
+
+Rollback
+Commit
+
+
+Begin Tran
+Delete from Buckets
+From WK_Buckets_ForDel as b
+where Buckets.ID = b.ID 
+
+Rollback
+Commit
+
+Select * from Buckets
+
+-- [[ METHOD 3: Where Exist/Not Exist ]] 
+
+Begin Tran
+Delete from Buckets 
+where not exists (Select 'X' from WK_Buckets_ForDel as b 
+				where Buckets.ID = b.ID) 
+
+Rollback
+Commit
+
+Select * from Buckets 
+
+-- //////////////////////////////////////////////////
+
+-- Truncate 
+
+Begin Tran
+Truncate table Buckets 
+
+Rollback
+Commit
+
+Select * from Buckets 
