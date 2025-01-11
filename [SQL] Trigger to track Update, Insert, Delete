@@ -1,0 +1,285 @@
+
+-- Need this in order to create our Foreign Key in the Buckets table
+Create table BucketType 
+(BucketType varchar(10) PRIMARY KEY)
+
+			Select * from BucketType 
+
+			Insert into BucketType(BucketType) 
+			values ('Spending'),
+			('Savings');
+
+Drop table Buckets 
+
+
+Create table Buckets
+(
+ID Int Identity(1,1) PRIMARY KEY,
+Category varchar(50),
+Subcategory varchar(100),
+BucketType varchar(10) FOREIGN KEY REFERENCES BucketType(BucketType),
+Comment varchar(1000), 
+Amount decimal(10,2),
+Due_Date varchar(5), 
+Modified_By varchar(50), 
+Timestamp datetime
+ )
+
+
+-- If you already have the Buckets table, you could use this Alter to add some new columns
+Alter table Buckets 
+Add Amount decimal(10,2), 
+Due_Date varchar(5), 
+Modified_By varchar(50), 
+Timestamp datetime; 
+
+
+
+ Insert into Buckets (Category, Subcategory, BucketType)
+values
+('Bills','Water','Spending'), 
+('Bills','Electricity','Spending'), 
+('Bills','Rent/Mortgage','Spending'), 
+('Bills','Wifi','Spending'), 
+('Bills','Phone','Spending'), 
+('Bills','Trash','Spending'), 
+('Other Expenses','Groceries','Spending'), 
+('Other Expenses','Gas','Spending'), 
+('Other Expenses','Lawn Care','Spending'), 
+('Other Expenses','Clothes','Spending'),
+('Retirement','Roth IRA 1','Savings'), 
+('Retirement','Roth IRA 2','Savings')
+
+Select * from Buckets 
+
+--Alter table Buckets
+--alter column Due_Date varchar(5) 
+
+Select * from Buckets;
+
+Update Buckets
+Set Amount = 55.43, Due_Date = '10th', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Water'
+
+Update Buckets
+Set Amount = 141.20, Due_Date = '15th', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Electricity'
+
+Update Buckets
+Set Amount = 1300, Due_Date = '1st', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Rent/Mortgage'
+
+Update Buckets
+Set Amount = 110, Due_Date = '1st', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Wifi'
+
+Update Buckets
+Set Amount = 115.20, Due_Date = '1st', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Phone'
+
+Update Buckets
+Set Amount = 86, Due_Date = '1st', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Trash'
+
+Update Buckets
+Set Amount = 900, Due_Date = '1st', Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Groceries'
+
+Update Buckets
+Set Amount = 120, Due_Date = Null, Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Gas'
+
+Update Buckets
+Set Amount = 65.33, Due_Date = 'AN' -- As needed
+, Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Lawn Care'
+
+Update Buckets
+Set Amount = 30, Due_Date = Null, Modified_By = 'VEEBEE', Timestamp = GETDATE() 
+where Subcategory = 'Clothes'
+
+Update Buckets
+Set Amount = 250, Due_Date = 'BM' -- By monthly
+, Modified_By = 'VEEBEE5', Timestamp = GETDATE() 
+where Subcategory = 'Roth IRA 1'
+
+
+Update Buckets
+Set Amount = 255, Due_Date = 'BM' -- By monthly
+, Modified_By = 'VEEBEE4', Timestamp = GETDATE() 
+where Subcategory = 'Roth IRA 2'
+
+-- /////////////////////////////////////////////////////////////////////////
+-- //////////////////////////////////////////////////////////////////////////////////
+
+-- Making our Audit table. The Trigger will be populating this table for us. 
+Create table Buckets_ADT (
+ID int, 
+ACTION_CD varchar(1), 
+OLD_CATEGORY VARCHAR(50), 
+NEW_CATEGORY VARCHAR(50), 
+OLD_SUBCATEGORY VARCHAR(100), 
+NEW_SUBCATEGORY VARCHAR(100), 
+OLD_BUCKETTYPE VARCHAR(10), 
+NEW_BUCKETTYPE VARCHAR(10),
+OLD_COMMENT VARCHAR(1000), 
+NEW_COMMENT VARCHAR(1000), 
+OLD_AMOUNT DECIMAL(10,2), 
+NEW_AMOUNT DECIMAL (10,2), 
+OLD_DUE_DATE VARCHAR(5), 
+NEW_DUE_DATE VARCHAR(5), 
+OLD_MODIFIED_BY VARCHAR(50), 
+NEW_MODIFIED_BY VARCHAR(50), 
+OLD_TIMESTAMP DATETIME, 
+NEW_TIMESTAMP DATETIME, 
+SYS_DATE DATETIME, 
+SYS_USER VARCHAR(128)
+)
+
+
+Select * from Buckets;
+
+Select * from Buckets_ADT; 
+
+
+-- See that it shows 1 row affected one time, vs 2 once the trigger is in place
+Begin tran
+Update Buckets 
+Set Subcategory = Concat(Subcategory,' - Sparkle Springs Co.'), MODIFIED_BY = 'VEEBEE', 
+Timestamp = Getdate() 
+where ID = 1
+
+Rollback
+Commit
+
+-- //////////////////////////////////////////////////////////////////////////////////
+-- //////////////////////////////////////////////////////////////////////////////////
+
+
+Create Trigger dbo.Buckets_TRG
+on dbo.Buckets 
+After INSERT, UPDATE, DELETE 
+as
+
+Begin 
+
+Declare @operation char(6),
+	    @suser varchar(128)
+
+		Set @operation = case when exists (Select * from inserted) 
+		                           and exists (Select * from deleted) then 'Update' 
+							  when exists (Select * from inserted) then 'Insert' 
+							  when exists (Select * from deleted) then 'Delete' 
+							  else Null 
+							  end 
+		Select @suser = SUSER_NAME(); 
+
+
+If @operation = 'Delete' 
+Insert into Buckets_ADT (ID, ACTION_CD, OLD_CATEGORY, OLD_SUBCATEGORY, 
+OLD_BUCKETTYPE, OLD_COMMENT, OLD_AMOUNT, OLD_DUE_DATE, OLD_MODIFIED_BY, OLD_TIMESTAMP, 
+SYS_DATE, SYS_USER) 
+SELECT D.ID, 'D', D.Category, D.Subcategory, 
+D.BucketType, D.Comment, D.Amount, D.Due_Date, D.Modified_By, D.Timestamp, 
+GETDATE(), @suser
+FROM deleted AS D
+
+
+
+If @operation = 'Insert' 
+Insert into Buckets_ADT (ID, ACTION_CD, NEW_CATEGORY, NEW_SUBCATEGORY, 
+NEW_BUCKETTYPE, NEW_COMMENT, NEW_AMOUNT, NEW_DUE_DATE, NEW_MODIFIED_BY, NEW_TIMESTAMP, 
+SYS_DATE, SYS_USER) 
+SELECT I.ID, 'I', I.Category, I.Subcategory, 
+I.BucketType, I.Comment, I.Amount, I.Due_Date, I.Modified_By, I.Timestamp, 
+GETDATE(), @suser
+FROM inserted as I
+
+
+If @operation = 'Update' 
+Insert into Buckets_ADT (ID, ACTION_CD, OLD_CATEGORY, OLD_SUBCATEGORY, 
+OLD_BUCKETTYPE, OLD_COMMENT, OLD_AMOUNT, OLD_DUE_DATE, OLD_MODIFIED_BY, OLD_TIMESTAMP,
+NEW_CATEGORY, NEW_SUBCATEGORY, 
+NEW_BUCKETTYPE, NEW_COMMENT, NEW_AMOUNT, NEW_DUE_DATE, NEW_MODIFIED_BY, NEW_TIMESTAMP, 
+SYS_DATE, SYS_USER) 
+Select I.ID, 'U', D.Category, D.Subcategory, 
+D.BucketType, D.Comment, D.Amount, D.Due_Date, D.Modified_By, D.Timestamp,
+I.Category, I.Subcategory, 
+I.BucketType, I.Comment, I.Amount, I.Due_Date, I.Modified_By, I.Timestamp, 
+GETDATE(), @suser
+from deleted as D, inserted as I
+
+End 
+Go
+
+-- //////////////////////////////////////////////////////////////////////////////////
+-- //////////////////////////////////////////////////////////////////////////////////
+
+
+Select * from Buckets;
+
+Select * from Buckets_ADT; 
+
+
+Begin tran
+Update Buckets 
+Set Subcategory = Concat(Subcategory,' - Sparkle Springs Co.'), MODIFIED_BY = 'VeeBeeUPD', Timestamp = Getdate() 
+where ID = 1
+
+Rollback
+Commit
+
+Begin tran
+Update Buckets 
+Set Subcategory = 'Water - Sparkle Springs Co.', MODIFIED_BY = 'JDOE', Timestamp = Getdate() 
+where ID = 1
+
+Rollback
+Commit
+
+
+
+-- More than one row affected, so more than 1 row will appear in Audit table from this insert. 
+Begin tran
+Insert Buckets (Category, Subcategory, Comment, Amount, Due_Date, Modified_By, Timestamp) 
+Values ('Children','School Supplies','Receive list from teachers',400.23,NULL,'VEEBEE2',GETDATE()), 
+('Children','Allowance','Keep bedrooms tidy',20,NULL,'VEEBEE3',GETDATE()),
+('Goals','Hawaii Vacation',Null,4000,Null,'VEEBEE',GETDATE())
+
+Commit
+
+
+Begin tran
+Update Buckets 
+Set Comment = 'Reevaluate in two months', MODIFIED_BY = 'JDOE', Timestamp = Getdate() 
+where Subcategory = 'Hawaii Vacation' 
+
+Rollback
+Commit
+
+
+Begin tran
+Delete from Buckets 
+where subcategory = 'Hawaii Vacation' 
+
+Rollback
+Commit
+
+
+
+
+Begin tran
+Insert Buckets (Category, Subcategory, Comment, Amount, Due_Date, Modified_By, Timestamp) 
+Values ('LAST ONE','Rollback Example','Yada yada yada',555.25,NULL,'VEEBEE',GETDATE())
+
+Rollback
+Commit
+
+Select * from Buckets 
+
+Select * from Buckets_ADT
+
+
+
+
+
