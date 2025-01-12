@@ -1,0 +1,213 @@
+
+
+-- NOTE: If you haven't already, run scripts from "[SQL] Trigger to track Update, Insert, Delete" scripts in GitHub to have tables and trigger created before you run the below scripts
+
+
+-- ///////////////////////////////////////////////////////////
+-- ///////////////////////////////////////////////////////////
+
+-- First: Insert
+Insert into Buckets (Category, Subcategory, Comment, Amount, Due_Date, Modified_By, Timestamp) 
+Values ('Other Expenses','Bird seed','Refill for winter',1000.43,'1st','VB_Insert',GETDATE())
+
+-- Second: Update
+Update Buckets 
+Set Comment = 'Buy 6 bags', Amount = 1300, Modified_By = 'JDOE', Timestamp = Getdate() 
+where Subcategory = 'Bird seed' 
+
+-- Third: Delete
+Delete from Buckets 
+where Subcategory = 'Bird seed' 
+
+-- Review Audit table to see how they look
+Select * from Buckets_ADT
+
+-- ///////////////////////////////////////////////////////////
+
+-- Step 1: Write a select that will be used in "From" section of main unpivoted Select (for Old values)
+
+-- [OLD Values] 
+Select ID, action_cd, sys_date, old_modified_by, sys_user, 
+OLD_CATEGORY, 
+OLD_SUBCATEGORY, 
+OLD_COMMENT, 
+OLD_AMOUNT, 
+OLD_DUE_DATE, 
+OLD_TIMESTAMP
+from buckets_adt 
+
+-- Step 2: Now we take the above Select, and unpivot some of the columns 
+-- The main idea is that in the end, all OLD values are in one column, all NEW values are in one column
+
+Select ID, action_cd, sys_date, OLD_MODIFIED_BY, SYS_USER, 
+unpv.OldCol, 
+unpv.Oldvalue
+from (
+			Select ID, action_cd, sys_date, old_modified_by, sys_user, 
+			OLD_CATEGORY, 
+			OLD_SUBCATEGORY, 
+			OLD_COMMENT, 
+			OLD_AMOUNT, 
+			OLD_DUE_DATE, 
+			OLD_TIMESTAMP
+			from buckets_adt 
+			) as S1
+unpivot
+(Oldvalue for OldCol in (
+						OLD_CATEGORY, 
+						OLD_SUBCATEGORY, 
+						OLD_COMMENT, 
+						OLD_AMOUNT, 
+						OLD_DUE_DATE, 
+						OLD_TIMESTAMP
+						)
+) as unpv
+
+
+-- Step 3: Unpivot 
+-- So let's make it treat all old values as the same data type. 
+-- When using Cast, will need to be sure to add a column name, or else will get an error 
+
+-- [[ Completed Old Values select ]] 
+Select ID, action_cd, sys_date, OLD_MODIFIED_BY, SYS_USER, 
+unpv.OldCol, 
+Right(unpv.OldCol,Len(unpv.OldCol)-4) as 'Col Description',
+unpv.Oldvalue
+from (
+			Select ID, action_cd, sys_date, old_modified_by, sys_user, 
+			ISNULL(CAST(OLD_CATEGORY AS VARCHAR(1000)),' ') AS OLD_CATEGORY, 
+			ISNULL(CAST(OLD_SUBCATEGORY AS VARCHAR(1000)),' ') AS OLD_SUBCATEGORY, 
+			ISNULL(CAST(OLD_COMMENT AS VARCHAR(1000)),' ') AS OLD_COMMENT, 
+			ISNULL(CAST(OLD_AMOUNT AS VARCHAR(1000)),' ') AS OLD_AMOUNT, 
+			ISNULL(CAST(OLD_DUE_DATE AS VARCHAR(1000)),' ') AS OLD_DUE_DATE, 
+			ISNULL(CAST(OLD_TIMESTAMP AS VARCHAR(1000)),' ') AS OLD_TIMESTAMP
+			from buckets_adt 
+			) as S1
+unpivot
+(Oldvalue for OldCol in (
+						OLD_CATEGORY, 
+						OLD_SUBCATEGORY, 
+						OLD_COMMENT, 
+						OLD_AMOUNT, 
+						OLD_DUE_DATE, 
+						OLD_TIMESTAMP
+						)
+) as unpv
+
+
+-- Step 4: Now we want the same select, but for new values. 
+-- Copy the last Select, paste. Now replace "Old" with "New"
+	-- and change select alias from S1 to S2 
+
+-- [[ Completed New values select ]] 
+Select ID, action_cd, sys_date, NEW_MODIFIED_BY, SYS_USER, 
+unpv.NewCol, 
+Right(unpv.NewCol,Len(unpv.NewCol)-4) as 'Col Description',
+unpv.Newvalue
+from (
+			Select ID, action_cd, sys_date, NEW_modified_by, sys_user, 
+			ISNULL(CAST(NEW_CATEGORY AS VARCHAR(1000)),' ') AS NEW_CATEGORY, 
+			ISNULL(CAST(NEW_SUBCATEGORY AS VARCHAR(1000)),' ') AS NEW_SUBCATEGORY, 
+			ISNULL(CAST(NEW_COMMENT AS VARCHAR(1000)),' ') AS NEW_COMMENT, 
+			ISNULL(CAST(NEW_AMOUNT AS VARCHAR(1000)),' ') AS NEW_AMOUNT, 
+			ISNULL(CAST(NEW_DUE_DATE AS VARCHAR(1000)),' ') AS NEW_DUE_DATE, 
+			ISNULL(CAST(NEW_TIMESTAMP AS VARCHAR(1000)),' ') AS NEW_TIMESTAMP
+			from buckets_adt 
+			) as S2
+unpivot
+(Newvalue for NewCol in (
+						NEW_CATEGORY, 
+						NEW_SUBCATEGORY, 
+						NEW_COMMENT, 
+						NEW_AMOUNT, 
+						NEW_DUE_DATE, 
+						NEW_TIMESTAMP
+						)
+) as unpv
+
+
+-- ///////////////////////////////////////////////////////////////////////
+-- ///////////////////////////////////////////////////////////////////////
+
+
+-- Step 5: Now to put the two selects together 
+-- Can comment out the Timestamp since you already have the date
+Create view dbo.VW_Buckets_ADT
+as
+Select 
+OV.ID AS 'Bucket ID', 
+case when OV.Action_CD = 'I' then 'INSERT' 
+     when OV.ACTION_CD = 'U' then 'UPDATE' 
+	 when OV.ACTION_CD = 'D' then 'DELETE'
+	 end as 'Action', 
+NV.NEW_MODIFIED_BY as 'Modified By', 
+NV.SYS_USER as 'System User', 
+OV.[Col Description] as 'Description', 
+OV.Oldvalue as 'From Value', 
+NV.Newvalue as 'To Value', 
+NV.Sys_Date as 'Date' 
+From
+		(
+				-- [[ Completed Old Values select ]] 
+				Select ID, action_cd, sys_date, OLD_MODIFIED_BY, SYS_USER, 
+				unpv.OldCol, 
+				Right(unpv.OldCol,Len(unpv.OldCol)-4) as 'Col Description',
+				unpv.Oldvalue
+				from (
+							Select ID, action_cd, sys_date, old_modified_by, sys_user, 
+							ISNULL(CAST(OLD_CATEGORY AS VARCHAR(1000)),' ') AS OLD_CATEGORY, 
+							ISNULL(CAST(OLD_SUBCATEGORY AS VARCHAR(1000)),' ') AS OLD_SUBCATEGORY, 
+							ISNULL(CAST(OLD_COMMENT AS VARCHAR(1000)),' ') AS OLD_COMMENT, 
+							ISNULL(CAST(OLD_AMOUNT AS VARCHAR(1000)),' ') AS OLD_AMOUNT, 
+							ISNULL(CAST(OLD_DUE_DATE AS VARCHAR(1000)),' ') AS OLD_DUE_DATE, 
+							ISNULL(CAST(OLD_TIMESTAMP AS VARCHAR(1000)),' ') AS OLD_TIMESTAMP
+							from buckets_adt 
+							) as S1
+				unpivot
+				(Oldvalue for OldCol in (
+										OLD_CATEGORY, 
+										OLD_SUBCATEGORY, 
+										OLD_COMMENT, 
+										OLD_AMOUNT, 
+										OLD_DUE_DATE, 
+										OLD_TIMESTAMP
+										)
+				) as unpv
+		) as OV -- Old Value
+INNER JOIN 
+(
+				-- [[ Completed New values select ]] 
+				Select ID, action_cd, sys_date, NEW_MODIFIED_BY, SYS_USER, 
+				unpv.NewCol, 
+				Right(unpv.NewCol,Len(unpv.NewCol)-4) as 'Col Description',
+				unpv.Newvalue
+				from (
+							Select ID, action_cd, sys_date, NEW_modified_by, sys_user, 
+							ISNULL(CAST(NEW_CATEGORY AS VARCHAR(1000)),' ') AS NEW_CATEGORY, 
+							ISNULL(CAST(NEW_SUBCATEGORY AS VARCHAR(1000)),' ') AS NEW_SUBCATEGORY, 
+							ISNULL(CAST(NEW_COMMENT AS VARCHAR(1000)),' ') AS NEW_COMMENT, 
+							ISNULL(CAST(NEW_AMOUNT AS VARCHAR(1000)),' ') AS NEW_AMOUNT, 
+							ISNULL(CAST(NEW_DUE_DATE AS VARCHAR(1000)),' ') AS NEW_DUE_DATE, 
+							ISNULL(CAST(NEW_TIMESTAMP AS VARCHAR(1000)),' ') AS NEW_TIMESTAMP
+							from buckets_adt 
+							) as S2
+				unpivot
+				(Newvalue for NewCol in (
+										NEW_CATEGORY, 
+										NEW_SUBCATEGORY, 
+										NEW_COMMENT, 
+										NEW_AMOUNT, 
+										NEW_DUE_DATE, 
+										NEW_TIMESTAMP
+										)
+				) as unpv
+		) as NV -- New Value
+On OV.ID = NV.ID 
+AND OV.SYS_DATE = NV.SYS_DATE 
+AND OV.ACTION_CD = NV.ACTION_CD 
+AND OV.[Col Description] = NV.[Col Description] 
+where OV.Oldvalue <> NV.Newvalue
+
+
+
+Select * from VW_Buckets_ADT
