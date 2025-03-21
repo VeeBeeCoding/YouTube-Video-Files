@@ -1,0 +1,43 @@
+
+/*
+SQL Source: 
+Creating table first to then pull into PBI 
+
+Note: In the original tutorial, I had a typo ("leapard" instead of "leopard"). This typo is fixed below. 
+
+*/
+
+Create table Animals
+(
+Creature varchar(120), 
+C_Location varchar(130),
+Total_Cnt int, 
+For_Sale int, 
+Modified_By varchar(50), 
+Timestamp datetime 
+)
+
+
+Select * from Animals 
+
+Truncate table Animals
+
+
+Insert into Animals 
+values 
+('Leopard Gecko', 'Sarah'+CHAR(39)+'s Serpents', 8, 5, 'SARAH',GETDATE())
+
+
+Insert into Animals 
+values 
+('Leopard Gecko', 'Ruby'+CHAR(39)+'s Reptiles', 13, 12, 'RUBY',GETDATE()), 
+('Leopard Gecko', 'Harry'+CHAR(39)+'s Hogs', 5, 5, 'HARRY', GETDATE())
+
+
+Insert into Animals 
+values 
+('Hognose Snake', 'Harry'+CHAR(39)+'s Hogs', 12, 6, 'HARRY', GETDATE())
+
+-- Referred to https://www.asciitable.com/ for the assigned number to the symbol apostrophe 
+
+
