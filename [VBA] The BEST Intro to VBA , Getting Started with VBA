@@ -1,3 +1,6 @@
+
+' [[ For the first module, "A_Organize" ]] 
+
 Sub Organize()
 
 'Author: VeeBee
@@ -263,3 +266,62 @@ ActiveWorkbook.Save
 MsgBox "The macro has completed running", , "Complete"
 
 End Sub
+
+
+' [[ End of coding in first module]]
+
+
+' ==================================================================================================================
+' ==================================================================================================================
+
+' [[ For the second module, "B_Cleanup" ]] 
+
+
+Sub Cleanup()
+
+
+    Sheets("Raw Data").Select
+            Rows("1:1").Select
+            Range(Selection, Selection.End(xlDown)).Select
+            Selection.ClearContents
+            
+                Rows("1:1").Select
+                With Selection.Interior
+                    .Pattern = xlNone
+                    .TintAndShade = 0
+                    .PatternTintAndShade = 0
+                End With
+            
+            Range("A1").Select
+            
+    
+    Sheets("Working").Select
+    Rows("2:2").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Selection.Delete Shift:=xlUp
+    ActiveWindow.ScrollColumn = 1
+    Range("A1").Select
+    
+    
+    Sheets("IMPORT").Select
+    Rows("2:2").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    Selection.ClearContents
+    Range("A1").Select
+    
+    
+    Sheets("Cover").Select
+    Range("A3").Select
+    
+ActiveWorkbook.Save
+
+MsgBox "File is now ready for next use.", , "Cleanup Complete"
+
+End Sub
+
+
+
+' [[ End of coding in second module]]
+
+
+
