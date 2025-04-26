@@ -1,0 +1,265 @@
+Sub Organize()
+
+'Author: VeeBee
+'Created: 4/24/2025
+'Purpose: Reorganize orders data for import
+
+' /////////////////////////////////////////////////
+
+'Changes Made:
+'
+'
+'
+
+' /////////////////////////////////////////////////
+
+' [[ Variables ]]
+
+Dim Crow As Integer   'Crow = Current Row
+Dim botRow As Integer 'botRow = Bottom Row, last row that has data
+
+
+'GoTo HERE
+
+
+' /////////////////////////////////////////////////
+
+' [[ STEP ONE: Delimit Raw Data ]]
+' Break up raw data to be in separate columns
+
+'First, delimit the data
+Sheets("Raw Data").Select
+Columns("A:A").Select
+Selection.TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+    TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=False, _
+    Semicolon:=False, Comma:=False, Space:=False, Other:=True, OtherChar _
+    :="~", FieldInfo:=Array(Array(1, 1), Array(2, 1), Array(3, 1), Array(4, 1), Array(5, _
+    1), Array(6, 1)), TrailingMinusNumbers:=True
+    
+    
+Columns("A:F").Select
+Columns("A:F").EntireColumn.AutoFit
+Range("A1").Select
+
+
+'Highlighting column headers in Yellow
+   Range("A1:F1").Select
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 65535
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+    Range("A1").Select
+    
+' /////////////////////////////////////////////////
+
+
+' [[ STEP TWO: Organize Data]]
+' Will make new rows so each individual dollar amount has its own designated row
+' to simplify the import
+
+'Copying Raw Data to Working Tab
+Sheets("Raw Data").Select
+        Range("A:F").Select
+        Selection.Copy
+
+
+Sheets("Working").Select
+        Range("A1").Select
+        ActiveSheet.Paste
+        
+        
+        Columns("A:G").Select
+        Columns("A:G").EntireColumn.AutoFit
+        
+        Range("A1").Select
+    
+
+'HERE:
+
+'Create new rows for each cost
+Crow = 2
+
+Do Until Cells(Crow, 1).Value = ""
+
+    'Rows("3:4").Select
+    Range(Cells(Crow + 1, 1), Cells(Crow + 2, 6)).Select
+    Selection.Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    
+    'Range("A2:F2").Select
+    Range(Cells(Crow, 1), Cells(Crow, 6)).Select
+    Selection.Copy
+    
+    'Range("A3:A4").Select
+    Range(Cells(Crow + 1, 1), Cells(Crow + 2, 1)).Select
+    ActiveSheet.Paste
+    Application.CutCopyMode = False 'Turning off marching ants
+    
+    'We shaded in gray the new rows (the copies)
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .ThemeColor = xlThemeColorDark1
+        .TintAndShade = -0.249977111117893
+        .PatternTintAndShade = 0
+    End With
+
+   ' ................
+
+    'We are entering each amount, and their Type (Cost, Tax, Ship)
+    'Range("G2").Select
+    Cells(Crow, 7).Select
+    ActiveCell.FormulaR1C1 = "=RC[-3]"
+    Cells(Crow, 8).Select
+    ActiveCell.FormulaR1C1 = "Cost"
+    
+    
+    Cells(Crow + 1, 7).Select
+    ActiveCell.FormulaR1C1 = "=RC[-2]"
+    Cells(Crow + 1, 8).Select
+    ActiveCell.FormulaR1C1 = "Tax"
+    
+    
+    Cells(Crow + 2, 7).Select
+    ActiveCell.FormulaR1C1 = "=RC[-1]"
+    Cells(Crow + 2, 8).Select
+    ActiveCell.FormulaR1C1 = "Ship"
+
+
+Crow = Crow + 3
+
+'Debug.Print "Current Row is now " & Crow
+
+
+Loop
+
+
+' /////////////////////////////////////////////////
+
+
+' [[ STEP THREE: Put in Description]]
+' Example of copying formula from one cell and using Ctrl Shift Up to paste in all
+' ((For One Column))
+
+    Range("I2").Select
+    ActiveCell.FormulaR1C1 = "=RC[-8]&""_""&RC[-7]&""_""&RC[-1]"
+
+    Range("I2").Select
+    Selection.Copy
+    Range("H2").Select
+    Selection.End(xlDown).Select  'Ctrl + Down
+    
+    'Range("I19").Select
+    Selection.Offset(0, 1).Select
+    Range(Selection, Selection.End(xlUp)).Select ' Ctrl Shift Up
+    ActiveSheet.Paste
+    Application.CutCopyMode = False
+    
+    Range("A1").Select
+
+
+' /////////////////////////////////////////////////
+
+' [[ STEP FOUR: Enter order number and line number]]
+'Example of copying formulas down, similar to if you double clicked
+' the bottom right corner of the cell
+' (( For Multiple Columns))
+
+botRow = Range("A1048576").End(xlUp).Row
+
+'Debug.Print botRow
+
+    Range("J2").Select
+    ActiveCell.FormulaR1C1 = "1"
+    Range("K2").Select
+    ActiveCell.FormulaR1C1 = "1"
+    
+    
+    Range("J3").Select
+    ActiveCell.FormulaR1C1 = "=IF(RC[-9]=R[-1]C[-9],R[-1]C,R[-1]C+1)"
+    Range("K3").Select
+    ActiveCell.FormulaR1C1 = "=R[-1]C+1"
+    
+    
+    Range("J3:K3").Select
+    'Selection.AutoFill Destination:=Range("J3:K19")
+    'Range("J3:K19").Select
+    Selection.AutoFill Destination:=Range("J3:K" & botRow)
+    Range("A1").Select
+
+
+
+' /////////////////////////////////////////////////
+
+' [[ STEP FIVE: Prepare IMPORT]]
+
+    Sheets("Working").Select
+    Range("K:K").Select
+    Selection.Copy
+    
+                Sheets("IMPORT").Select
+                Range("A1").Select
+                Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+                    :=False, Transpose:=False
+        
+        
+    Sheets("Working").Select
+    Range("J:J").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    
+                Sheets("IMPORT").Select
+                Range("B1").Select
+                Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+                    :=False, Transpose:=False
+        
+        
+    Sheets("Working").Select
+    Range("I:I").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    
+            Sheets("IMPORT").Select
+            Range("C1").Select
+            Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+                :=False, Transpose:=False
+        
+        
+    Sheets("Working").Select
+    Range("G:G").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    
+                Sheets("IMPORT").Select
+                Range("D1").Select
+                Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+                    :=False, Transpose:=False
+                    
+        
+    Columns("A:D").Select
+    Columns("A:D").EntireColumn.AutoFit
+    Columns("A:B").Select
+    Application.CutCopyMode = False
+    With Selection
+        .HorizontalAlignment = xlCenter
+        .VerticalAlignment = xlBottom
+        .WrapText = False
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+    
+    Range("A1").Select
+
+' /////////////////////////////////////////////////
+
+ActiveWorkbook.Save
+
+MsgBox "The macro has completed running", , "Complete"
+
+End Sub
