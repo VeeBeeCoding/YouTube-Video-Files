@@ -1,4 +1,25 @@
 
+'/\/\/\/\/\//\/\/\/\/\//\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/
+' /\/\/\/\/\/ This part was in the Text file /\/\/\/\/\/ 
+'/\/\/\/\/\//\/\/\/\/\//\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/
+
+Location~Item~Quantity~Total cost~Tax~Ship
+Leo's Leopards~T shirts~100~3092~927.6~40
+Leo's Leopards~Plushies~50~1516.5~454.95~30
+Leo's Leopards~Pens~500~185~55.5~8
+Sarah's Serpents~Hoodies~100~4600~1380~9
+Sarah's Serpents~Pen Holder~24~306.96~92.088~10
+Ruby's Reptiles~Mouse Pad~70~294~88.2~11
+
+
+
+
+
+'/\/\/\/\/\//\/\/\/\/\//\/\/\/\/\//\/\/\/\/\/
+' /\/\/\/\/\/ START OF VBA CODING /\/\/\/\/\/ 
+'/\/\/\/\/\//\/\/\/\/\//\/\/\/\/\//\/\/\/\/\/
+
+
 ' [[ For the first module, "A_Organize" ]] 
 
 Sub Organize()
