@@ -1,0 +1,121 @@
+
+Sub Organize()
+
+'Author: Vee Bee
+'Created on: 5/17/2025
+'Purpose: Organize surrendered animal records for specialists
+
+' ///////////////////////////////////////////
+
+' Define Variables
+
+Dim Crow As Integer  ' Crow = Current Row
+Dim cell As Range
+Dim ws As Worksheet  ' ws = Worksheet
+Dim Group As String  ' Our animal groups (Gecko, Snake, etc)
+Dim Weight As Double
+
+
+
+' ///////////////////////////////////////////
+
+' [[ STEP 1: Getting distinct list of Groups ]]
+
+'Copying Group list
+Sheets("List").Select
+Range("A1").Select
+Range(Selection, Selection.End(xlDown)).Select
+Selection.Copy
+
+'Pasting Group list in column P, after data
+Range("P1").Select
+ActiveSheet.Paste
+
+'Removing duplicates
+Columns("P:P").Select
+Application.CutCopyMode = False
+ActiveSheet.Range("$P:$P").RemoveDuplicates Columns:=1, Header:=xlNo
+
+Range("A1").Select
+
+' ///////////////////////////////////////////
+
+' [[ STEP 2: Create a new sheet for each distinct group ]]
+' Use For Each ... Next
+
+
+Set ws = Sheets("List")
+
+For Each cell In ws.Range(ws.Cells(2, 16), ws.Cells(Rows.Count, 16).End(xlUp))
+
+    ws.Copy After:=Sheets(Sheets.Count)
+    Sheets(Sheets.Count).Name = cell.Value
+
+    '[[STEP2B: Clean up sheet]]
+    
+    Crow = 2
+    
+    Do Until Cells(Crow, 1).Value = ""
+    
+    'Remove rows that do not belong to this group
+    If Cells(Crow, 1).Value <> cell.Value Then
+    Cells(Crow, 1).EntireRow.Delete
+    Crow = Crow - 1
+    GoTo JumpOut
+    End If
+    
+    
+    'Highlight Weights
+    Group = Cells(Crow, 1).Value
+    Weight = Cells(Crow, 6).Value
+    
+    ' [[ STEP2C: Color weights depending by animal group]]
+    
+    'Color if under weight
+    If Group = "Gecko" And Weight < 50 Or _
+       Group = "Bearded Dragon" And Weight < 380 Or _
+       Group = "Snake" And Weight < 1000 Then
+       Cells(Crow, 6).Interior.Color = 65535 'Yellow
+    
+    'Color if over weight
+    ElseIf Group = "Gecko" And Weight > 80 Or _
+           Group = "Bearded Dragon" And Weight > 510 Or _
+           Group = "Snake" And Weight > 2500 Then
+        Cells(Crow, 6).Interior.Color = 255 'Red
+        
+    Else: Cells(Crow, 6).Interior.Color = 5296274 'Green
+    
+    End If
+    
+    
+    
+JumpOut:
+
+    
+    Crow = Crow + 1
+    Loop
+
+
+
+  'Removing "group" column
+    Columns("P:P").Select
+    Selection.ClearContents
+    Range("A1").Select
+
+Next
+
+
+' ///////////////////////////////////////////
+
+
+' Finishing up
+
+Sheets("Cover").Select
+Range("A2").Select
+
+ActiveWorkbook.Save
+
+MsgBox "Macro has finished running.", , "Complete"
+
+
+End Sub
