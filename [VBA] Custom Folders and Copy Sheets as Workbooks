@@ -1,0 +1,105 @@
+Sub CreateWorkbooks()
+
+' [[ Define Variables ]]
+Dim ws_sel As Integer       'Current worksheet selected
+Dim ws_count As Integer     'Worksheet Count
+Dim sName As String         'Sheet name
+Dim dateS As String         'Date String noted on Cover
+Dim fName As String         'File name
+Dim AnimalFolder As String  'Animal folder
+
+' /////////////////////////////////////////////////
+
+
+dateS = Sheets("Cover").Range("B14").Value
+'Debug.Print dateS
+
+ws_count = ActiveWorkbook.Sheets.Count
+ws_sel = 3
+
+Do Until ws_sel = ws_count + 1
+Worksheets(ws_sel).Select
+
+Range("Q1").Select
+    
+    'Finding the name of the sheet, to use in new workbook name
+    ActiveCell.Formula2R1C1 = _
+        "=MID(CELL(""filename"",RC),FIND(""]"",CELL(""filename"",RC))+1,99)"
+    
+    sName = Range("Q1").Value
+    fName = dateS + " " + sName
+    
+            'Debug.Print fName
+    
+    
+    'Define the Animal Folder
+    AnimalFolder = "C:\Users\lntho\OneDrive\Desktop\Animal Rescue\Surrenders\" & sName
+    'Debug.Print AnimalFolder
+    
+    
+    'Create folder if it does not exist
+    If Dir(AnimalFolder, vbDirectory) <> "" Then
+    GoTo SkipCreate
+    Else
+    MkDir (AnimalFolder)
+    End If
+    
+SkipCreate:
+   
+    
+    'Create copy of sheet and save in our new location
+    Sheets(ws_sel).Select
+    Sheets(ws_sel).Copy
+    
+    Range("Q1").ClearContents
+    Range("A1").Select
+    
+    
+    
+    ChDir AnimalFolder
+    
+    ActiveWorkbook.SaveAs Filename:=fName
+    ActiveWindow.Close
+    
+
+ws_sel = ws_sel + 1
+Loop
+
+' /////////////////////////////////////////////////
+
+'Removing animal tabs
+
+ws_sel = 3
+Worksheets(ws_sel).Select
+
+Application.DisplayAlerts = False
+
+Do Until ws_sel = ws_count + 1
+
+If sName <> "Cover" Or _
+   sName <> "List" Then
+   ActiveWindow.SelectedSheets.Delete
+   ws_sel = ws_sel - 1
+End If
+
+ws_count = ActiveWorkbook.Sheets.Count
+
+ws_sel = ws_sel + 1
+Loop
+
+Application.DisplayAlerts = True
+
+
+
+' /////////////////////////////////////////////////
+
+Sheets("Cover").Select
+Range("A2").Select
+ActiveWorkbook.Save
+
+
+MsgBox "Macro has finished running.", , "Complete"
+
+
+
+End Sub
