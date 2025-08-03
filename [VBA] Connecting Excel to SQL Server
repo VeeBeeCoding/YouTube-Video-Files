@@ -1,0 +1,189 @@
+
+[[  SQL Prep  ]]
+
+  Create table Assets (
+  [Asset_No] int identity(1,1) primary key, 
+  [Location] varchar(150), 
+  [Location_ID] varchar(5), 
+  [Item_Desc] varchar(250), 
+  [Amt] decimal(12,2), 
+  [Active_Fl] char(1), 
+  [Condition] varchar(25), 
+  [Comment] varchar(250), 
+  [Timestamp] datetime
+  )
+
+
+   Create table WK_Assets (
+  [Asset_No] int , 
+  [Location] varchar(150), 
+  [Location_ID] varchar(5), 
+  [Item_Desc] varchar(250), 
+  [Amt] decimal(12,2), 
+  [Active_Fl] char(1), 
+  [Condition] varchar(25), 
+  [Comment] varchar(250), 
+  [Timestamp] datetime
+  )
+
+
+  Select * from Assets
+  Select * from WK_Assets
+
+-- Create the login for svcAssetsMACRO, then use these to grant access to certain tables 
+  grant select on Assets to svcAssetsMACRO;
+  grant select, update, insert, delete on WK_Assets to svcAssetsMACRO;
+
+
+
+-- Use this after loading data to WK_Assets using VBA
+Begin tran
+  Update WK_Assets 
+  Set Location = REPLACE(Location,'+CHAR(39)+',CHAR(39))
+
+  Rollback
+  Commit
+
+  Select * from WK_Assets
+
+-- Once you have data in the work table, WK_Assets, then you can make changes to the master tables Assets based on the work table WK_Assets
+ Begin Tran
+ Insert into dbo.Assets ([Location],Location_ID,Item_Desc, Amt, Active_Fl, Condition, Comment, [Timestamp])
+ Select [Location],Location_ID,Item_Desc, Amt, Active_Fl, Condition, Comment, [Timestamp] 
+ from dbo.WK_Assets as b
+ where b.Asset_No = '0'
+
+
+  Rollback
+  Commit
+
+  Select * from Assets 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+[[  VBA coding ]] 
+
+
+
+
+
+Sub AssetsPullData()
+
+Dim conn As Object, rs As Object
+Dim sql As String
+Dim Crow As Integer 'Crow = Current row
+
+Crow = 2
+
+Set conn = New ADODB.Connection 'Tools, References -- Check Microsoft Active X Data Objects 6.1 Library or else will fail here
+
+conn.Open "Driver={SQL Server};server=COFFEE\SQLEXPRESS;UID=svcAssetsMACRO;PWD=Ag6fG3zS#Y4NSeU;database=VEEBEETUTORIALS_PROD"
+'conn.Open "Driver={SQL Server};server=COFFEE\SQLEXPRESS;Trusted_Connection=yes;database=VEEBEETUTORIALS_PROD"
+
+sql = "Select * from dbo.Assets"
+Set rs = conn.Execute(sql)
+
+Sheets("AssetData").Range("A2:I2").Select
+Range(Selection, Selection.End(xlDown)).Select
+Selection.ClearContents
+Range("A2").Select
+
+Do
+Sheets("AssetData").Cells(Crow, 1).Value = rs(0).Value
+Sheets("AssetData").Cells(Crow, 2).Value = rs(1).Value
+Sheets("AssetData").Cells(Crow, 3).Value = rs(2).Value
+Sheets("AssetData").Cells(Crow, 4).Value = rs(3).Value
+Sheets("AssetData").Cells(Crow, 5).Value = rs(4).Value
+Sheets("AssetData").Cells(Crow, 6).Value = rs(5).Value
+Sheets("AssetData").Cells(Crow, 7).Value = rs(6).Value
+Sheets("AssetData").Cells(Crow, 8).Value = rs(7).Value
+Sheets("AssetData").Cells(Crow, 9).Value = rs(8).Value
+
+rs.MoveNext
+
+Crow = Crow + 1
+Loop Until rs.EOF
+
+' ---- Clean up ----
+
+rs.Close
+conn.Close
+Set conn = Nothing
+Set rs = Nothing
+
+ActiveWorkbook.Save
+
+
+
+End Sub
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+Sub PushData()
+
+Dim conn As Object, rs As Object
+Dim sql As String
+Dim Crow As Integer 'Crow = Current Row
+
+Dim eAsset_No As Integer
+Dim eLocation As String
+Dim eLocation_ID As String
+Dim eItem_Desc As String
+Dim eAmt As Variant
+Dim eActive_Fl As String
+Dim eCondition As String
+Dim eComment As String
+Dim eTimestamp As Date
+
+Set conn = New ADODB.Connection 'Tools, References -- Check Microsoft Active X Data Objects 6.1 Library or else will fail here
+
+
+conn.Open "Driver={SQL Server};server=COFFEE\SQLEXPRESS;UID=svcAssetsMACRO;PWD=Ag6fG3zS#Y4NSeU;database=VEEBEETUTORIALS_PROD"
+
+Crow = 2
+
+Do Until Cells(Crow, 2).Value = ""
+    eAsset_No = Sheets("AssetSubmit").Cells(Crow, 1).Value
+    eLocation = Sheets("AssetSubmit").Cells(Crow, 2).Value
+        eLocation = Replace(eLocation, "'", "+CHAR(39)+")
+    eLocation_ID = Sheets("AssetSubmit").Cells(Crow, 3).Value
+    eItem_Desc = Sheets("AssetSubmit").Cells(Crow, 4).Value
+    eAmt = Sheets("AssetSubmit").Cells(Crow, 5).Value
+    eActive_Fl = Sheets("AssetSubmit").Cells(Crow, 6).Value
+    eCondition = Sheets("AssetSubmit").Cells(Crow, 7).Value
+    eComment = Sheets("AssetSubmit").Cells(Crow, 8).Value
+    eTimestamp = Sheets("AssetSubmit").Cells(Crow, 9).Value
+
+sql = "Insert into dbo.WK_Assets (Asset_No, Location, Location_ID, Item_Desc, Amt, Active_Fl, Condition, Comment, Timestamp)"
+sql = sql & "values('" & eAsset_No & "','" & eLocation & "','" & eLocation_ID & "','" & eItem_Desc & "','" & eAmt & "','" & eActive_Fl & "','" & eCondition & "','" & eComment & "','" & eTimestamp & "')"
+
+'Debug.Print sql
+
+Set rs = conn.Execute(sql)
+Crow = Crow + 1
+Loop
+
+ActiveWorkbook.Save
+
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
