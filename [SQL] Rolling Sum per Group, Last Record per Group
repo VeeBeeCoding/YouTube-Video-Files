@@ -1,0 +1,30 @@
+
+-- Get rolling sum per department, period, and fiscal year
+with main as (
+				Select distinct fiscalyear, period, department, Exp_Desc,
+				sum(Amount) over (partition by department, period, fiscalyear order by fiscalyear, period) as 'Amt'
+				from GL
+				where Exp_Code = 501
+				--order by department, fiscalyear, period
+			)
+Select fiscalyear, period, department, Exp_Desc, 
+Amt, 
+lag(Amt) over (partition by department, fiscalyear order by fiscalyear, period) as 'Previous Month',
+sum(Amt) over (partition by department, fiscalyear order by fiscalyear, period) as 'Rolling total for FY', 
+sum(Amt) over (partition by department order by fiscalyear, period) as 'Rolling total OVERALL'
+from main 
+where [Department] = 'GHI'
+order by department, FiscalYear, [period]
+
+
+
+
+-- Find last record per department
+Select * from GL as a
+where exp_code = '562' 
+and timestamp = (Select max(timestamp) 
+				  from GL as b 
+				  where 
+				  b.exp_code = '562' and
+				  a.Department = b.Department)
+
