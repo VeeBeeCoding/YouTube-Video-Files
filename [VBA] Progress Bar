@@ -1,0 +1,95 @@
+
+[[ Coding in the Module called A_ProgressBar ]] 
+
+Sub progress(pctCompl As Single)
+
+
+UF_ProgressBar.TextBox.Text = pctCompl & "% Completed"
+UF_ProgressBar.Bar.Width = pctCompl * 2
+
+DoEvents
+
+
+End Sub
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+[[ Coding in the Module called B_MainCode ]] 
+
+Sub Begin()
+
+UF_ProgressBar.Show
+
+End Sub
+
+
+Sub MainCode()
+
+
+'Define variables
+Dim pctCompl As Single 'This is Percent Complete
+
+pctCompl = 0
+progress pctCompl
+Application.Wait (Now + TimeValue("0:00:02"))
+
+
+pctCompl = 10
+progress pctCompl
+
+Application.Wait (Now + TimeValue("0:00:02"))
+
+pctCompl = 20
+progress pctCompl
+
+Application.Wait (Now + TimeValue("0:00:02"))
+
+pctCompl = 60
+progress pctCompl
+
+Application.Wait (Now + TimeValue("0:00:02"))
+
+pctCompl = 90
+progress pctCompl
+
+Application.Wait (Now + TimeValue("0:00:02"))
+
+pctCompl = 100
+progress pctCompl
+
+Application.Wait (Now + TimeValue("0:00:03"))
+
+UF_ProgressBar.Hide
+ActiveWorkbook.Save
+MsgBox "The Macro has finished running!!", , "Complete"
+
+
+
+End Sub
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+[[ Coding in the Userform called UF_ProgressBar, with the right dropdown stating "Activate" ]] 
+
+Private Sub UserForm_Activate()
+
+Call MainCode
+
+End Sub
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
